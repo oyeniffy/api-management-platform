@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  apiKeys   ApiKey[]
+
+  @@map("clients")
+}
+
+model ApiKey {
+  id          String       @id @default(uuid())
+  key         String       @unique
+  clientId    String
+  client      Client       @relation(fields: [clientId], references: [id])
+  isActive    Boolean      @default(true)
+  rateLimit   Int          @default(100)
+  createdAt   DateTime     @default(now())
+  revokedAt   DateTime?
+  requestLogs RequestLog[]
+
+  @@map("api_keys")
+}
+
+model RequestLog {
+  id           String   @id @default(uuid())
+  apiKeyId     String
+  apiKey       ApiKey   @relation(fields: [apiKeyId], references: [id])
+  method       String
+  path         String
+  statusCode   Int
+  responseTime Int
+  createdAt    DateTime @default(now())
+
+  @@map("request_logs")
+  @@index([apiKeyId, createdAt])
+}
