@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
+import clientsRouter from './routes/clients';
 
 dotenv.config();
 
@@ -11,6 +12,8 @@ app.use(express.json());
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'API Management Platform is running' });
 });
+
+app.use('/clients', clientsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
