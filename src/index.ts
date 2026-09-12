@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import clientsRouter from './routes/clients';
 import protectedRouter from './routes/protected';
 import analyticsRouter from './routes/analytics';
+import proxyRouter from './routes/proxy';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/clients', clientsRouter);
 app.use('/api', protectedRouter);
 app.use('/analytics', analyticsRouter);
+app.use('/proxy', proxyRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

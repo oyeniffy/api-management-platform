@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../lib/prisma';
 
-// Extend Express's Request type to carry our auth info
 declare global {
   namespace Express {
     interface Request {
@@ -9,6 +8,7 @@ declare global {
         id: string;
         clientId: string;
         rateLimit: number;
+        baseUrl: string | null;
       };
     }
   }
@@ -21,7 +21,10 @@ export async function requireApiKey(req: Request, res: Response, next: NextFunct
     return res.status(401).json({ error: 'Missing X-API-Key header' });
   }
 
-  const apiKey = await prisma.apiKey.findUnique({ where: { key } });
+  const apiKey = await prisma.apiKey.findUnique({
+    where: { key },
+    include: { client: true },
+  });
 
   if (!apiKey) {
     return res.status(401).json({ error: 'Invalid API key' });
@@ -35,6 +38,7 @@ export async function requireApiKey(req: Request, res: Response, next: NextFunct
     id: apiKey.id,
     clientId: apiKey.clientId,
     rateLimit: apiKey.rateLimit,
+    baseUrl: apiKey.client.baseUrl,
   };
 
   next();

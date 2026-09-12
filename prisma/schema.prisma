@@ -11,6 +11,7 @@ model Client {
   id        String    @id @default(uuid())
   name      String
   email     String    @unique
+  baseUrl   String?
   createdAt DateTime  @default(now())
   apiKeys   ApiKey[]
 

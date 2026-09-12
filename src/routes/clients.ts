@@ -6,7 +6,7 @@ const router = Router();
 
 // Register a new client
 router.post('/', async (req: Request, res: Response) => {
-  const { name, email } = req.body;
+  const { name, email, baseUrl } = req.body;
 
   if (!name || !email) {
     return res.status(400).json({ error: 'name and email are required' });
@@ -14,7 +14,7 @@ router.post('/', async (req: Request, res: Response) => {
 
   try {
     const client = await prisma.client.create({
-      data: { name, email },
+      data: { name, email, baseUrl },
     });
     res.status(201).json(client);
   } catch (err: any) {
@@ -23,6 +23,24 @@ router.post('/', async (req: Request, res: Response) => {
     }
     res.status(500).json({ error: 'Failed to create client' });
   }
+});
+
+// Update a client's baseUrl (the backend API this client's requests get proxied to)
+router.patch('/:clientId', async (req: Request, res: Response) => {
+  const { clientId } = req.params;
+  const { baseUrl } = req.body;
+
+  const client = await prisma.client.findUnique({ where: { id: clientId } });
+  if (!client) {
+    return res.status(404).json({ error: 'Client not found' });
+  }
+
+  const updated = await prisma.client.update({
+    where: { id: clientId },
+    data: { baseUrl },
+  });
+
+  res.json(updated);
 });
 
 // Generate a new API key for a client
