@@ -1,0 +1,67 @@
+flowchart LR
+    C[API Consumer]
+    WAF[Edge Load Balancer / WAF\nTLS termination • coarse protection]
+
+    subgraph DP[DATA PLANE — stateless, horizontally scalable]
+        G[API Gateway Fleet\nAuth • routing • proxy • guardrails]
+        RL[(Redis\nAtomic rate limits\nrevocation + cache)]
+        CFG[(PostgreSQL\nConfiguration source of truth)]
+        Q[(Durable Event Queue\nrequest metadata)]
+        CB[Circuit breakers\ntimeouts • retries]
+    end
+
+    subgraph UP[UPSTREAMS]
+        B1[Registered Client Backend A]
+        B2[Registered Client Backend B]
+    end
+
+    subgraph CP[CONTROL PLANE — administrative workloads]
+        UI[Admin UI / CLI]
+        API[Control-Plane API]
+        AUDIT[(Audit Events)]
+    end
+
+    subgraph AN[ANALYTICS PLANE]
+        WORKER[Analytics Worker]
+        LOGS[(Request Logs\ntime-partitioned)]
+        ROLLUP[(Metrics Rollups / Warehouse)]
+        DASH[Analytics Dashboard]
+    end
+
+    C -->|HTTPS + X-API-Key| WAF
+    WAF --> G
+    G -->|credential + route lookup| CFG
+    G -->|atomic token-bucket decision| RL
+    G --> CB
+    CB -->|validated, filtered request| B1
+    CB -->|validated, filtered request| B2
+    G -.->|non-blocking metadata event| Q
+    Q --> WORKER
+    WORKER --> LOGS
+    WORKER --> ROLLUP
+    DASH --> ROLLUP
+
+    UI --> API
+    API --> CFG
+    API -->|policy invalidation| RL
+    API --> AUDIT
+
+    classDef edge fill:#E8F1FF,stroke:#2563EB,stroke-width:2px,color:#0F172A
+    classDef gateway fill:#DBEAFE,stroke:#1D4ED8,stroke-width:3px,color:#0F172A
+    classDef store fill:#ECFDF5,stroke:#059669,stroke-width:2px,color:#0F172A
+    classDef control fill:#F3E8FF,stroke:#7E22CE,stroke-width:2px,color:#0F172A
+    classDef upstream fill:#FFF7ED,stroke:#EA580C,stroke-width:2px,color:#0F172A
+    classDef analytics fill:#F1F5F9,stroke:#475569,stroke-width:2px,color:#0F172A
+
+    class C,WAF edge
+    class G,CB gateway
+    class RL,CFG,Q,LOGS,ROLLUP,AUDIT store
+    class UI,API control
+    class B1,B2 upstream
+    class WORKER,DASH analytics
+
+    style DP fill:#EFF6FF,stroke:#60A5FA,stroke-width:2px
+    style CP fill:#FAF5FF,stroke:#C084FC,stroke-width:2px
+    style UP fill:#FFF7ED,stroke:#FDBA74,stroke-width:2px
+    style AN fill:#F8FAFC,stroke:#94A3B8,stroke-width:2px
+    linkStyle default stroke:#64748B,stroke-width:1.5px
