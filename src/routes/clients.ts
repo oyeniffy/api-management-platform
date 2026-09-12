@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { generateApiKey } from '../utils/apiKey';
+import { generateApiKey, hashApiKey, getKeyPrefix } from '../utils/apiKey';
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// Update a client's baseUrl (the backend API this client's requests get proxied to)
+// Update a client's baseUrl
 router.patch('/:clientId', async (req: Request, res: Response) => {
   const { clientId } = req.params;
   const { baseUrl } = req.body;
@@ -53,17 +53,29 @@ router.post('/:clientId/keys', async (req: Request, res: Response) => {
     return res.status(404).json({ error: 'Client not found' });
   }
 
-  const key = generateApiKey();
+  const rawKey = generateApiKey();
+  const keyHash = hashApiKey(rawKey);
+  const keyPrefix = getKeyPrefix(rawKey);
 
   const apiKey = await prisma.apiKey.create({
     data: {
-      key,
+      keyHash,
+      keyPrefix,
       clientId,
       rateLimit: rateLimit || 100,
     },
   });
 
-  res.status(201).json(apiKey);
+  // Return the raw key ONLY here — it's never stored or retrievable again
+  res.status(201).json({
+    id: apiKey.id,
+    key: rawKey,
+    keyPrefix,
+    clientId: apiKey.clientId,
+    isActive: apiKey.isActive,
+    rateLimit: apiKey.rateLimit,
+    createdAt: apiKey.createdAt,
+  });
 });
 
 export default router;

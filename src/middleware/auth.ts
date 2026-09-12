@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../lib/prisma';
+import { hashApiKey } from '../utils/apiKey';
 
 declare global {
   namespace Express {
@@ -21,8 +22,10 @@ export async function requireApiKey(req: Request, res: Response, next: NextFunct
     return res.status(401).json({ error: 'Missing X-API-Key header' });
   }
 
+  const keyHash = hashApiKey(key);
+
   const apiKey = await prisma.apiKey.findUnique({
-    where: { key },
+    where: { keyHash },
     include: { client: true },
   });
 

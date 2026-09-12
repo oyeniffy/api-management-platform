@@ -20,7 +20,8 @@ model Client {
 
 model ApiKey {
   id          String       @id @default(uuid())
-  key         String       @unique
+  keyHash     String       @unique
+  keyPrefix   String
   clientId    String
   client      Client       @relation(fields: [clientId], references: [id])
   isActive    Boolean      @default(true)
