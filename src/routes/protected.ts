@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { requireApiKey } from '../middleware/auth';
+import { rateLimit } from '../middleware/rateLimit';
 
 const router = Router();
 
-router.get('/ping', requireApiKey, (req: Request, res: Response) => {
+router.get('/ping', requireApiKey, rateLimit, (req: Request, res: Response) => {
   res.json({
     message: 'Authenticated successfully',
     clientId: req.apiKey?.clientId,
