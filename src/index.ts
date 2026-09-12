@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import clientsRouter from './routes/clients';
+import protectedRouter from './routes/protected';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 app.use('/clients', clientsRouter);
+app.use('/api', protectedRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
