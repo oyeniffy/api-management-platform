@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import clientsRouter from './routes/clients';
 import protectedRouter from './routes/protected';
+import analyticsRouter from './routes/analytics';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 app.use('/clients', clientsRouter);
 app.use('/api', protectedRouter);
+app.use('/analytics', analyticsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
