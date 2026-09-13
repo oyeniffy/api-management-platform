@@ -4,6 +4,14 @@ import { generateApiKey, hashApiKey, getKeyPrefix } from '../utils/apiKey';
 
 const router = Router();
 
+// List all clients
+router.get('/', async (req: Request, res: Response) => {
+  const clients = await prisma.client.findMany({
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(clients);
+});
+
 // Register a new client
 router.post('/', async (req: Request, res: Response) => {
   const { name, email, baseUrl } = req.body;
@@ -41,6 +49,32 @@ router.patch('/:clientId', async (req: Request, res: Response) => {
   });
 
   res.json(updated);
+});
+
+// List a client's API keys (never exposes keyHash or the raw key)
+router.get('/:clientId/keys', async (req: Request, res: Response) => {
+  const { clientId } = req.params;
+
+  const client = await prisma.client.findUnique({ where: { id: clientId } });
+  if (!client) {
+    return res.status(404).json({ error: 'Client not found' });
+  }
+
+  const keys = await prisma.apiKey.findMany({
+    where: { clientId },
+    select: {
+      id: true,
+      keyPrefix: true,
+      clientId: true,
+      isActive: true,
+      rateLimit: true,
+      createdAt: true,
+      revokedAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  res.json(keys);
 });
 
 // Generate a new API key for a client
