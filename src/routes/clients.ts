@@ -35,7 +35,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 // Update a client's baseUrl
 router.patch('/:clientId', async (req: Request, res: Response) => {
-  const { clientId } = req.params;
+  const clientId = req.params.clientId as string;
   const { baseUrl } = req.body;
 
   const client = await prisma.client.findUnique({ where: { id: clientId } });
@@ -53,7 +53,7 @@ router.patch('/:clientId', async (req: Request, res: Response) => {
 
 // List a client's API keys (never exposes keyHash or the raw key)
 router.get('/:clientId/keys', async (req: Request, res: Response) => {
-  const { clientId } = req.params;
+  const clientId = req.params.clientId as string;
 
   const client = await prisma.client.findUnique({ where: { id: clientId } });
   if (!client) {
@@ -79,7 +79,7 @@ router.get('/:clientId/keys', async (req: Request, res: Response) => {
 
 // Generate a new API key for a client
 router.post('/:clientId/keys', async (req: Request, res: Response) => {
-  const { clientId } = req.params;
+  const clientId = req.params.clientId as string;
   const { rateLimit } = req.body;
 
   const client = await prisma.client.findUnique({ where: { id: clientId } });
