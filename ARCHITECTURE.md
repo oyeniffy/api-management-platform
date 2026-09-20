@@ -1,4 +1,4 @@
-# API Management Platform — Systems Design
+# API Management Platform (Systems Design)
 
 **Status:** Proposed architecture  
 **Audience:** Project maintainers, backend engineers, platform engineers, and security reviewers  
